@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TaskFlow</title>
+
+    <!-- Tailwind CDN (1 archivo total, sin build) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Opcional: config rápida para que dark funcione por clase -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {} },
+      };
+    </script>
+  </head>
+
+  <body
+    class="min-h-screen bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100"
+  >
+    <div class="mx-auto max-w-6xl p-4 sm:p-6">
+      <!-- HEADER -->
+      <header
+        class="mb-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-900/60 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+            aria-hidden="true"
+          >
+            ✓
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold leading-tight">TaskFlow</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400">
+              
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="themeBtn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
+            aria-label="Cambiar tema"
+            title="Cambiar tema"
+          >
+            <span id="themeIcon" aria-hidden="true">Oscuro</span>
+            <span class="hidden sm:inline">Modo</span>
+          </button>
+
+          <button
+            id="clearBtn"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus:ring-slate-600"
+            title="Borrar todas las tareas"
+          >
+            🧹 <span class="hidden sm:inline">Limpiar</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- LAYOUT -->
+      <main class="grid gap-6 lg:grid-cols-[320px_1fr]">
+        <!-- ASIDE: NUEVA TAREA -->
+        <aside
+          class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        >
+          <h2 class="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-200">
+            Nueva tarea
+          </h2>
+
+          <form id="taskForm" class="space-y-3">
+            <label class="block">
+              <span class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
+                >Título</span
+              >
+              <input
+                id="taskInput"
+                type="text"
+                placeholder="Ej: Estudiar Tailwind"
+                class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:placeholder:text-slate-500 dark:focus:ring-slate-600"
+                required
+              />
+            </label>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="block">
+                <span class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
+                  >Categoría</span
+                >
+                <select
+                  id="taskCategory"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:focus:ring-slate-600"
+                >
+                  <option>Estudio</option>
+                  <option>Trabajo</option>
+                  <option>Personal</option>
+                </select>
+              </label>
+
+              <label class="block">
+                <span class="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-300"
+                  >Prioridad</span
+                >
+                <select
+                  id="taskPriority"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:focus:ring-slate-600"
+                >
+                  <option value="Baja">Baja</option>
+                  <option value="Media" selected>Media</option>
+                  <option value="Alta">Alta</option>
+                </select>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-800 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-400 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus:ring-slate-600"
+            >
+              + Añadir tarea
+            </button>
+
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+           
+            </p>
+          </form>
+        </aside>
+
+        <!-- SECTION: LISTA -->
+        <section
+          class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        >
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
+              Tus tareas
+            </h2>
+
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Buscar..."
+              class="w-40 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition duration-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:placeholder:text-slate-500 dark:focus:ring-slate-600 sm:w-64"
+            />
+          </div>
+
+          <ul id="taskList" class="space-y-2"></ul>
+
+          <div
+            id="emptyState"
+            class="mt-6 rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400"
+          >
+            No hay tareas todavía.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      // Helpers
+      const $ = (s) => document.querySelector(s);
+      const root = document.documentElement;
+
+      // Elements
+      const themeBtn = $("#themeBtn");
+      const themeIcon = $("#themeIcon");
+
+      const taskForm = $("#taskForm");
+      const taskInput = $("#taskInput");
+      const taskCategory = $("#taskCategory");
+      const taskPriority = $("#taskPriority");
+
+      const taskList = $("#taskList");
+      const emptyState = $("#emptyState");
+      const clearBtn = $("#clearBtn");
+      const searchInput = $("#searchInput");
+
+      // Storage keys
+      const STORAGE_KEY = "taskflow_tasks";
+      const THEME_KEY = "taskflow_theme"; // "dark" | "light"
+
+      let tasks = loadTasks();
+
+      initTheme();
+      render();
+
+      // Events
+      themeBtn.addEventListener("click", toggleTheme);
+
+      taskForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = taskInput.value.trim();
+        if (!title) return;
+
+        tasks.unshift({
+          id: crypto.randomUUID(),
+          title,
+          category: taskCategory.value,
+          priority: taskPriority.value,
+          done: false,
+          createdAt: Date.now(),
+        });
+
+        saveTasks();
+        taskForm.reset();
+        taskPriority.value = "Media";
+        render();
+        taskInput.focus();
+      });
+
+      clearBtn.addEventListener("click", () => {
+        tasks = [];
+        saveTasks();
+        render();
+      });
+
+      searchInput.addEventListener("input", render);
+
+      taskList.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-action]");
+        if (!btn) return;
+
+        const li = btn.closest("li");
+        const id = li?.dataset?.id;
+        if (!id) return;
+
+        const action = btn.dataset.action;
+
+        if (action === "toggle") {
+          tasks = tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t));
+          saveTasks();
+          render();
+        }
+
+        if (action === "delete") {
+          tasks = tasks.filter((t) => t.id !== id);
+          saveTasks();
+          render();
+        }
+      });
+
+      // Render
+      function render() {
+        const q = searchInput.value.trim().toLowerCase();
+        const filtered = q
+          ? tasks.filter(
+              (t) =>
+                t.title.toLowerCase().includes(q) ||
+                t.category.toLowerCase().includes(q) ||
+                t.priority.toLowerCase().includes(q)
+            )
+          : tasks;
+
+        taskList.innerHTML = filtered.map(taskItemHTML).join("");
+        emptyState.classList.toggle("hidden", filtered.length !== 0);
+      }
+
+      function taskItemHTML(t) {
+        return `
+          <li data-id="${t.id}"
+            class="group flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow dark:border-slate-800 dark:bg-slate-950/30"
+          >
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <button
+                  data-action="toggle"
+                  class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-sm shadow-sm transition duration-200 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:focus:ring-slate-600"
+                  title="Hecha / Pendiente"
+                  aria-label="Hecha / Pendiente"
+                >
+                  ${t.done ? "✅" : "⬜"}
+                </button>
+
+                <p class="truncate text-sm font-medium ${
+                  t.done
+                    ? "text-slate-400 line-through dark:text-slate-500"
+                    : "text-slate-900 dark:text-slate-100"
+                }">
+                  ${escapeHTML(t.title)}
+                </p>
+              </div>
+
+              <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                ${badgeBase(t.category)}
+                ${badgePriority(t.priority)}
+              </div>
+            </div>
+
+            <button
+              data-action="delete"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800 dark:focus:ring-slate-600 sm:opacity-0 sm:group-hover:opacity-100"
+              title="Eliminar"
+              aria-label="Eliminar"
+            >
+              🗑 <span class="hidden sm:inline">Borrar</span>
+            </button>
+          </li>
+        `;
+      }
+
+      function badgeBase(text) {
+        return `
+          <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            ${escapeHTML(text)}
+          </span>
+        `;
+      }
+
+      function badgePriority(p) {
+        if (p === "Alta") {
+          return `
+            <span class="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-1 font-semibold text-slate-900 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-100">
+              🔥 ${p}
+            </span>
+          `;
+        }
+        if (p === "Media") {
+          return `
+            <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+              ⚡ ${p}
+            </span>
+          `;
+        }
+        return `
+          <span class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
+            🌿 ${p}
+          </span>
+        `;
+      }
+
+      // Storage
+      function saveTasks() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      }
+
+      function loadTasks() {
+        try {
+          return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? [];
+        } catch {
+          return [];
+        }
+      }
+
+      // Theme
+      function initTheme() {
+        const saved = localStorage.getItem(THEME_KEY);
+
+        if (saved === "dark") root.classList.add("dark");
+        if (saved === "light") root.classList.remove("dark");
+
+        syncThemeIcon();
+      }
+
+      function toggleTheme() {
+        root.classList.toggle("dark");
+        localStorage.setItem(THEME_KEY, root.classList.contains("dark") ? "dark" : "light");
+        syncThemeIcon();
+      }
+
+      function syncThemeIcon() {
+        themeIcon.textContent = root.classList.contains("dark") ? "🌙" : "☀️";
+      }
+
+      // Security
+      function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, (m) => {
+          const map = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;",
+          };
+          return map[m];
+        });
+      }
+    </script>
+  </body>
+</html>
