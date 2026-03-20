@@ -1,273 +1,150 @@
-# TaskFlow – Fase backend con Express
+# TaskFlow
 
-TaskFlow pasa de ser una aplicación frontend con persistencia local a una solución cliente-servidor. El frontend sigue siendo HTML + Tailwind + JavaScript, pero ahora las tareas se almacenan en un backend Node.js con Express y se consumen mediante una API RESTful.
+TaskFlow es una pequeña aplicación web para gestionar tareas (to‑dos) en el navegador, sin backend, pensada como ejemplo de buenas prácticas con JavaScript sencillo, Tailwind CSS y uso ligero de IA para refactorizar y documentar el código.
 
-## Qué se ha implementado
+## Características principales
 
-### Backend
-- Servidor Express en `server/`
-- Arquitectura por capas: `routes`, `controllers`, `services`
-- Variables de entorno con `dotenv`
-- Middleware `express.json()` para parseo de JSON
-- Middleware de `cors()` para permitir peticiones desde el frontend
-- Middleware de auditoría `loggerAcademico`
-- Middleware global de errores
-- API RESTful bajo `/api/v1/tasks`
-- Persistencia simulada en memoria con `let tasks = []`
-
-### Frontend
-- Eliminada la persistencia de tareas en `localStorage`
-- Nueva capa de red en `src/api/client.js`
-- Consumo del backend con `fetch`
-- Estados visuales de carga, éxito y error
-- La UI mantiene filtros, búsqueda, edición, marcado y borrado
-- Se conserva `localStorage` solo para preferencias visuales (tema y filtros), no para almacenar tareas
+- **Gestión básica de tareas**: crear, marcar como completadas y eliminar tareas.
+- **Validaciones de formulario**:
+  - Título obligatorio.
+  - Longitud mínima y máxima (3–120 caracteres).
+  - Categoría y prioridad limitadas a valores válidos.
+- **Filtros avanzados**:
+  - **Búsqueda por texto** (título, categoría, prioridad).
+  - **Filtro por estado**: todas, pendientes o completadas.
+  - **Filtro por categoría**: Estudio, Trabajo, Personal.
+- **Ordenación configurable**:
+  - Más recientes / más antiguas.
+  - Prioridad alta primero.
+  - Título A–Z / Z–A.
+- **Edición rápida de tareas**:
+  - Botón “Editar” para cambiar el título de una tarea ya creada.
+- **Persistencia en `localStorage`**:
+  - Tareas y preferencias de filtros/orden se guardan entre recargas.
+- **Tema claro/oscuro**:
+  - Toggle de tema con persistencia.
 
 ## Estructura del proyecto
 
-```text
-TaskFlow/
-├── index.html
-├── taskflow.js
-├── src/
-│   └── api/
-│       └── client.js
-├── docs/
-│   ├── backend-api.md
-│   └── ai/
-│       ├── ai-development-workflow.md
-│       └── experiments.md
-├── server/
-│   ├── .env.example
-│   ├── .gitignore
-│   ├── package.json
-│   └── src/
-│       ├── config/
-│       │   └── env.js
-│       ├── controllers/
-│       │   └── task.controller.js
-│       ├── middlewares/
-│       │   └── logger.middleware.js
-│       ├── routes/
-│       │   └── task.routes.js
-│       ├── services/
-│       │   └── task.service.js
-│       └── index.js
-└── vercel.json
-```
+- `index.html`: página principal de TaskFlow.
+  - Layout de la interfaz (header, formulario de nueva tarea, lista, filtros).
+  - Carga Tailwind CSS desde CDN.
+  - Incluye un `<script>` pequeño solo para configurar Tailwind y otro para cargar `taskflow.js`.
 
-## Arquitectura por capas
+- `taskflow.js`: lógica de la aplicación.
+  - Manejo del formulario, validaciones y creación de tareas.
+  - Renderizado, filtrado y ordenación de la lista.
+  - Edición y borrado de tareas.
+  - Gestión de tema (claro/oscuro).
+  - Persistencia en `localStorage` de tareas y preferencias de usuario.
 
-### 1. Routes
-Reciben la URL y el verbo HTTP y delegan al controlador correcto.
+- `docs/ai/*`: documentación relacionada con el uso de IA y flujos de trabajo en este proyecto.
 
-- `GET /api/v1/tasks`
-- `POST /api/v1/tasks`
-- `PATCH /api/v1/tasks/:id`
-- `DELETE /api/v1/tasks/:id`
+## Cómo usar el proyecto
 
-### 2. Controllers
-Son la frontera HTTP. Aquí se:
+### Requisitos
 
-- leen `req.params` y `req.body`
-- validan los datos del cliente
-- devuelven códigos HTTP correctos
-- llaman a la capa de servicios
+- Solo necesitas un **navegador moderno** (no hace falta servidor ni build).
 
-### 3. Services
-Contienen la lógica de negocio pura y la persistencia simulada.
+### Puesta en marcha
 
-- `getAllTasks()`
-- `createTask(data)`
-- `updateTask(id, updates)`
-- `deleteTask(id)`
+1. Clona o descarga este repositorio.
+2. Abre el archivo `index.html` directamente en tu navegador (doble clic o “Open with Browser”).
+3. Empieza a crear tareas desde el panel izquierdo.
 
-Si un recurso no existe, el servicio lanza `throw new Error('NOT_FOUND')` para que el middleware global lo traduzca a HTTP 404.
+### Flujo básico
 
-## Middlewares usados
+1. Escribe un título de tarea, elige **categoría** y **prioridad** y pulsa **“+ Añadir tarea”**.
+2. Usa el icono de cuadro/✅ para marcar tareas como pendientes o completadas.
+3. Usa el botón 🗑 para borrar una tarea.
+4. Usa el botón ✏️ para editar el título de una tarea existente.
+5. Utiliza el buscador y los filtros para encontrar tareas rápidamente.
 
-### `express.json()`
-Transforma el JSON crudo recibido por la red en objetos JavaScript accesibles desde `req.body`.
+## Ejemplos de uso
 
-### `cors()`
-Permite que el navegador del frontend pueda consumir la API del backend aunque se sirvan desde orígenes distintos.
+### Ejemplo 1: Lista de estudio
 
-### `loggerAcademico`
-Registra método HTTP, URL, código de estado y duración de la petición. Es útil para auditoría, depuración y análisis de rendimiento.
+1. Crea tareas como:
+   - “Estudiar Tailwind”
+   - “Practicar JavaScript”
+   - “Leer documentación de IA”
+2. Marca la categoría como **Estudio** y ajusta la **Prioridad** a Alta/Media.
+3. Filtra por categoría “Estudio” y ordena por “Prioridad alta primero” para ver primero lo más importante.
 
-### Middleware global de errores
-Va al final de `server/src/index.js` y traduce errores del servicio a respuestas HTTP seguras:
+### Ejemplo 2: Mezcla de trabajo y personal
 
-- `NOT_FOUND` → `404`
-- cualquier otro error → `500 Error interno del servidor`
+1. Añade tareas con distintas categorías:
+   - “Preparar informe semanal” → Categoría: **Trabajo**, Prioridad: Alta.
+   - “Ir al gimnasio” → Categoría: **Personal**, Prioridad: Media.
+2. Usa el filtro de **estado** para ver solo tareas pendientes.
+3. Usa el filtro de **categoría** para centrarte en “Trabajo” durante tu jornada laboral.
 
-## Variables de entorno
+### Ejemplo 3: Limpieza rápida de tareas
 
-Archivo de ejemplo:
+1. Cuando termines un bloque de trabajo, pulsa el botón 🧹 “Limpiar” para borrar todas las tareas.
+2. Empieza una nueva sesión de tareas sin restos antiguos.
 
-```env
-PORT=3000
-CLIENT_ORIGIN=http://127.0.0.1:5500
-```
+## Documentación de funciones clave
 
-Regla importante: el archivo `.env` real no debe subirse al repositorio. Por eso se incluye en `server/.gitignore`.
+La lógica principal está en `taskflow.js`. A continuación se resumen algunas funciones importantes (además de la documentación JSDoc presente en el propio archivo):
 
-## Cómo arrancar el backend
+- **`handleTaskFormSubmit(event)`**  
+  Maneja el envío del formulario de nueva tarea.  
+  - Valida los datos mediante `validateTaskForm`.  
+  - Normaliza categoría y prioridad (`normalizeCategory`, `normalizePriority`).  
+  - Crea una nueva tarea (`createTask`) y la añade al principio de la lista.  
+  - Guarda en `localStorage` y vuelve a renderizar (`persistTasksAndRender`).
 
-```bash
-cd server
-npm install
-cp .env.example .env
-npm run dev
-```
+- **`validateTaskForm(title, category, priority)`**  
+  Verifica que:
+  - El título no esté vacío y cumpla los límites de longitud.
+  - La categoría y prioridad estén dentro de las listas permitidas.
+  Devuelve `null` si todo está bien o un mensaje de error en español si hay problemas.
 
-El servidor quedará disponible en:
+- **`renderTaskList()`**  
+  Orquesta el refresco de la lista:
+  - Lee el texto de búsqueda, el filtro de estado, el filtro de categoría y el criterio de orden.
+  - Llama a `getFilteredTasks` y después a `sortTasks`.
+  - Genera el HTML de cada tarea con `taskItemTemplate` y lo inyecta en el DOM.
+  - Muestra u oculta el estado vacío según corresponda.
 
-```text
-http://localhost:3000
-```
+- **`getFilteredTasks(taskList, query, statusFilter, categoryFilter)`**  
+  Recibe la lista completa de tareas y devuelve una lista filtrada:
+  - Por texto (en título, categoría o prioridad).
+  - Por estado (todas, pendientes, completadas).
+  - Por categoría específica (o todas).
 
-## Cómo abrir el frontend
+- **`sortTasks(taskList, sortOrder)`**  
+  Ordena las tareas según:
+  - Fecha de creación (ascendente/descendente).
+  - Prioridad (Alta > Media > Baja).
+  - Título (A–Z o Z–A).
 
-Puedes abrir `index.html` con Live Server o con cualquier servidor estático sencillo. El frontend consumirá:
+- **`handleTaskListClick(event)`**  
+  Listener de eventos delegados para la lista de tareas:
+  - **`toggle`**: marca una tarea como hecha/pendiente.
+  - **`delete`**: elimina la tarea.
+  - **`edit`**: abre un `prompt` para editar el título y reutiliza `validateTaskForm` para validar el nuevo valor.
 
-```text
-http://localhost:3000/api/v1/tasks
-```
+- **`initializeTheme()`, `handleThemeToggle()`, `syncThemeIcon()`**  
+  Controlan el tema claro/oscuro:
+  - Leen y guardan la preferencia en `localStorage`.
+  - Aplican la clase `dark` al `documentElement`.
+  - Ajustan el icono del botón de tema.
 
-## Endpoints de la API
+## Notas sobre el uso de IA
 
-### `GET /api/v1/tasks`
-Devuelve todas las tareas.
+Parte de este proyecto se ha refactorizado y documentado con ayuda de una IA:
 
-Ejemplo de respuesta:
+- Se han propuesto nombres de funciones y variables más expresivos.
+- Se ha separado la lógica en funciones pequeñas y reutilizables.
+- Se ha añadido documentación JSDoc en las funciones clave.
+- Se han generado ideas de nuevas funcionalidades (filtros, ordenación, edición) y después se han revisado y corregido manualmente.
 
-```json
-[
-  {
-    "id": "abc123",
-    "title": "Preparar presentación",
-    "category": "Trabajo",
-    "priority": "Alta",
-    "dueDate": "2026-03-25",
-    "done": false,
-    "createdAt": 1760000000000,
-    "updatedAt": 1760000000000
-  }
-]
-```
+Si amplías el proyecto, se recomienda mantener este estilo:
 
-### `POST /api/v1/tasks`
-Crea una nueva tarea.
+- Funciones pequeñas, con un propósito claro.
+- Nombres descriptivos (en español o en inglés, pero consistentes).
+- Comentarios JSDoc cuando el comportamiento no es completamente evidente.
+- Commits pequeños y bien descritos al añadir nuevas funcionalidades.
 
-Body de ejemplo:
-
-```json
-{
-  "title": "Repasar Express",
-  "category": "Estudio",
-  "priority": "Alta",
-  "dueDate": "2026-03-21"
-}
-```
-
-Respuesta correcta:
-- `201 Created`
-
-### `PATCH /api/v1/tasks/:id`
-Actualiza parcialmente una tarea.
-
-Body de ejemplo:
-
-```json
-{
-  "done": true
-}
-```
-
-O bien:
-
-```json
-{
-  "title": "Nuevo título"
-}
-```
-
-Respuesta correcta:
-- `200 OK`
-
-### `DELETE /api/v1/tasks/:id`
-Elimina una tarea.
-
-Respuesta correcta:
-- `204 No Content`
-
-## Errores que debes probar en Postman o Thunder Client
-
-### Error 400
-Enviar un `POST` sin título:
-
-```json
-{
-  "category": "Trabajo",
-  "priority": "Alta"
-}
-```
-
-Respuesta esperada:
-
-```json
-{
-  "error": "El título es obligatorio y debe tener al menos 3 caracteres."
-}
-```
-
-### Error 404
-Intentar borrar una tarea inexistente:
-
-```text
-DELETE /api/v1/tasks/id-inexistente
-```
-
-Respuesta esperada:
-
-```json
-{
-  "error": "La tarea no existe."
-}
-```
-
-### Error 500
-Puedes provocarlo temporalmente lanzando un error manual dentro del servicio para comprobar que el middleware global responde con:
-
-```json
-{
-  "error": "Error interno del servidor"
-}
-```
-
-## Gestión de estados de red en el frontend
-
-La interfaz ahora contempla tres estados reales:
-
-- **Carga**: muestra un mensaje mientras el navegador espera la respuesta del backend.
-- **Éxito**: renderiza la lista de tareas sincronizada con el servidor.
-- **Error**: muestra un bloque visible si el backend responde con un 400, 404 o 500.
-
-Esto es importante porque una aplicación conectada a red ya no puede asumir respuesta instantánea ni éxito permanente.
-
-## Despliegue en Vercel
-
-Se incluye un `vercel.json` como punto de partida para desplegar el backend. Antes de desplegar:
-
-1. añade las variables de entorno en Vercel
-2. revisa `CLIENT_ORIGIN`
-3. comprueba que las rutas `/api/*` apunten al servidor Node
-
-## Bonus y mejoras futuras
-
-- Documentar la API con Swagger / OpenAPI
-- Añadir pruebas automáticas
-- Sustituir el array en memoria por una base de datos real
-- Integrar Sentry para monitorización de errores
-- Añadir autenticación y multiusuario

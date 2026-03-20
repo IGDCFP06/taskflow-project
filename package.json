@@ -1,0 +1,24 @@
+{
+  "name": "taskflow-project",
+  "version": "1.0.0",
+  "description": "TaskFlow es una pequeña aplicación web para gestionar tareas (to‑dos) en el navegador, sin backend, pensada como ejemplo de buenas prácticas con JavaScript sencillo, Tailwind CSS y uso ligero de IA para refactorizar y documentar el código.",
+  "main": "taskflow.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
