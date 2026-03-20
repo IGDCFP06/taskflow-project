@@ -297,6 +297,10 @@
             </div>
           </div>
 
+          <div id="loadingState" class="mb-3 hidden rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-300">Cargando tareas desde el backend...</div>
+
+          <div id="networkError" class="mb-3 hidden rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"></div>
+
           <ul id="taskList" class="space-y-2"></ul>
 
           <div
@@ -328,6 +332,8 @@
           <li>• Ordenación configurable: más recientes, más antiguas, prioridad o título A‑Z/Z‑A.</li>
           <li>• Edición rápida del título de una tarea desde el botón ✏️.</li>
           <li>• Tema claro/oscuro con preferencia memorizada en el navegador.</li>
+          <li>• Sincronización real con backend Express mediante API REST.</li>
+          <li>• Estados visuales de carga, éxito y error al comunicarse con el servidor.</li>
         </ul>
       </section>
     </div>
@@ -341,6 +347,7 @@
       -->
     </script>
 
+    <script src="./src/api/client.js"></script>
     <script src="./taskflow.js"></script>
   </body>
 </html>
