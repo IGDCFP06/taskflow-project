@@ -42,7 +42,7 @@ function updateTask(id, updates) {
     throw new Error('NOT_FOUND');
   }
 
-  if (Object.prototype.hasOwnProperty.call(updates, 'title')) {
+  if (typeof updates.title === 'string') {
     task.title = updates.title.trim();
   }
 

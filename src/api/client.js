@@ -1,13 +1,20 @@
 const API_BASE_URL = globalThis.TASKFLOW_API_URL || 'http://localhost:3000/api/v1/tasks';
 
 async function apiRequest(path = '', options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+      ...options,
+    });
+  } catch {
+    const networkError = new Error('No se pudo conectar con el servidor.');
+    networkError.code = 'NETWORK_ERROR';
+    throw networkError;
+  }
 
   if (response.status === 204) {
     return null;
@@ -17,7 +24,9 @@ async function apiRequest(path = '', options = {}) {
 
   if (!response.ok) {
     const errorMessage = data?.error || 'Error de red al comunicar con el servidor.';
-    throw new Error(errorMessage);
+    const error = new Error(errorMessage);
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -46,3 +55,10 @@ async function deleteTaskRequest(id) {
     method: 'DELETE',
   });
 }
+
+globalThis.TaskflowApi = {
+  getTasksRequest,
+  createTaskRequest,
+  updateTaskRequest,
+  deleteTaskRequest,
+};

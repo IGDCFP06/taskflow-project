@@ -83,7 +83,15 @@ function patchTask(req, res, next) {
       return res.status(400).json({ error: 'La fecha objetivo debe ser texto en formato YYYY-MM-DD o null.' });
     }
 
-    const task = taskService.updateTask(id, { title, category, priority, done, dueDate });
+    const updates = {};
+
+    if (title !== undefined) updates.title = title;
+    if (category !== undefined) updates.category = category;
+    if (priority !== undefined) updates.priority = priority;
+    if (done !== undefined) updates.done = done;
+    if (dueDate !== undefined) updates.dueDate = dueDate;
+
+    const task = taskService.updateTask(id, updates);
     res.status(200).json(task);
   } catch (error) {
     next(error);

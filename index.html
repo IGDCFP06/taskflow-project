@@ -299,6 +299,12 @@
 
           <ul id="taskList" class="space-y-2"></ul>
 
+          <p
+            id="networkState"
+            class="mt-3 hidden rounded-lg border px-3 py-2 text-xs"
+            aria-live="polite"
+          ></p>
+
           <div
             id="emptyState"
             class="mt-6 rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400"
@@ -336,11 +342,12 @@
       <!--
         Bloque principal de JavaScript:
         - Maneja tareas (crear, listar, buscar, completar, borrar)
-        - Guarda datos en localStorage
+        - Consume API REST con fetch
         - Controla el tema claro/oscuro
       -->
     </script>
 
+    <script src="./src/api/client.js"></script>
     <script src="./taskflow.js"></script>
   </body>
 </html>

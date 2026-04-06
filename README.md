@@ -1,150 +1,226 @@
-# TaskFlow
+# TaskFlow (Frontend + Backend REST)
 
-TaskFlow es una pequeña aplicación web para gestionar tareas (to‑dos) en el navegador, sin backend, pensada como ejemplo de buenas prácticas con JavaScript sencillo, Tailwind CSS y uso ligero de IA para refactorizar y documentar el código.
+TaskFlow es una aplicación de gestión de tareas con arquitectura separada en frontend y backend.
 
-## Características principales
+- Frontend: HTML + Tailwind + JavaScript Vanilla.
+- Backend: Node.js + Express + middlewares + arquitectura por capas.
+- Persistencia: en memoria (`tasks[]`) en la capa de servicio (sin base de datos, para laboratorio).
 
-- **Gestión básica de tareas**: crear, marcar como completadas y eliminar tareas.
-- **Validaciones de formulario**:
-  - Título obligatorio.
-  - Longitud mínima y máxima (3–120 caracteres).
-  - Categoría y prioridad limitadas a valores válidos.
-- **Filtros avanzados**:
-  - **Búsqueda por texto** (título, categoría, prioridad).
-  - **Filtro por estado**: todas, pendientes o completadas.
-  - **Filtro por categoría**: Estudio, Trabajo, Personal.
-- **Ordenación configurable**:
-  - Más recientes / más antiguas.
-  - Prioridad alta primero.
-  - Título A–Z / Z–A.
-- **Edición rápida de tareas**:
-  - Botón “Editar” para cambiar el título de una tarea ya creada.
-- **Persistencia en `localStorage`**:
-  - Tareas y preferencias de filtros/orden se guardan entre recargas.
-- **Tema claro/oscuro**:
-  - Toggle de tema con persistencia.
+## Arquitectura de carpetas
 
-## Estructura del proyecto
+```text
+/taskflow-project-configurado
+├─ index.html
+├─ taskflow.js
+├─ src/
+│  └─ api/
+│     └─ client.js
+├─ docs/
+│  ├─ backend-api.md
+│  └─ integration-tests.md
+├─ server/
+│  ├─ .env.example
+│  ├─ package.json
+│  └─ src/
+│     ├─ config/
+│     │  └─ env.js
+│     ├─ controllers/
+│     │  └─ task.controller.js
+│     ├─ middlewares/
+│     │  └─ logger.middleware.js
+│     ├─ routes/
+│     │  └─ task.routes.js
+│     ├─ services/
+│     │  └─ task.service.js
+│     └─ index.js
+├─ api/
+│  └─ index.js
+└─ vercel.json
+```
 
-- `index.html`: página principal de TaskFlow.
-  - Layout de la interfaz (header, formulario de nueva tarea, lista, filtros).
-  - Carga Tailwind CSS desde CDN.
-  - Incluye un `<script>` pequeño solo para configurar Tailwind y otro para cargar `taskflow.js`.
+## Backend: diseño por capas
 
-- `taskflow.js`: lógica de la aplicación.
-  - Manejo del formulario, validaciones y creación de tareas.
-  - Renderizado, filtrado y ordenación de la lista.
-  - Edición y borrado de tareas.
-  - Gestión de tema (claro/oscuro).
-  - Persistencia en `localStorage` de tareas y preferencias de usuario.
+### 1) Router (`server/src/routes/task.routes.js`)
+Responsabilidad:
+- Mapear HTTP + URL a controlador.
 
-- `docs/ai/*`: documentación relacionada con el uso de IA y flujos de trabajo en este proyecto.
+Rutas:
+- `GET /api/v1/tasks`
+- `POST /api/v1/tasks`
+- `PATCH /api/v1/tasks/:id`
+- `DELETE /api/v1/tasks/:id`
 
-## Cómo usar el proyecto
+### 2) Controller (`server/src/controllers/task.controller.js`)
+Responsabilidad:
+- Leer `req.params` y `req.body`.
+- Validar datos en frontera de red.
+- Devolver `res.status(...).json(...)` con semántica HTTP correcta.
 
-### Requisitos
+Validaciones incluidas:
+- `title` obligatorio, string, mínimo 3 caracteres.
+- `category` dentro de `Estudio | Trabajo | Personal`.
+- `priority` dentro de `Baja | Media | Alta`.
+- `done` booleano en `PATCH`.
+- `dueDate` string o `null`.
 
-- Solo necesitas un **navegador moderno** (no hace falta servidor ni build).
+### 3) Service (`server/src/services/task.service.js`)
+Responsabilidad:
+- Lógica de negocio pura (sin Express).
+- Gestión del estado en `let tasks = []`.
+- Lanza `Error('NOT_FOUND')` cuando no existe una tarea.
 
-### Puesta en marcha
+## Middlewares
 
-1. Clona o descarga este repositorio.
-2. Abre el archivo `index.html` directamente en tu navegador (doble clic o “Open with Browser”).
-3. Empieza a crear tareas desde el panel izquierdo.
+En `server/src/index.js`:
 
-### Flujo básico
+- `cors(...)`: controla orígenes permitidos.
+- `express.json()`: parsea JSON de entrada.
+- `loggerAcademico`: auditoría de cada petición (`method`, `url`, `status`, tiempo).
+- middleware 404: devuelve `{ error: 'Ruta no encontrada' }`.
+- middleware global de errores:
+  - `NOT_FOUND` -> `404`
+  - resto -> `500` con mensaje genérico
 
-1. Escribe un título de tarea, elige **categoría** y **prioridad** y pulsa **“+ Añadir tarea”**.
-2. Usa el icono de cuadro/✅ para marcar tareas como pendientes o completadas.
-3. Usa el botón 🗑 para borrar una tarea.
-4. Usa el botón ✏️ para editar el título de una tarea existente.
-5. Utiliza el buscador y los filtros para encontrar tareas rápidamente.
+También hay una ruta de apoyo para pruebas de error interno en local:
+- `GET /api/v1/debug/error` (solo si `NODE_ENV !== 'production'`)
 
-## Ejemplos de uso
+## Variables de entorno
 
-### Ejemplo 1: Lista de estudio
+Archivo local: `server/.env`
 
-1. Crea tareas como:
-   - “Estudiar Tailwind”
-   - “Practicar JavaScript”
-   - “Leer documentación de IA”
-2. Marca la categoría como **Estudio** y ajusta la **Prioridad** a Alta/Media.
-3. Filtra por categoría “Estudio” y ordena por “Prioridad alta primero” para ver primero lo más importante.
+Ejemplo (plantilla en `server/.env.example`):
 
-### Ejemplo 2: Mezcla de trabajo y personal
+```env
+PORT=3000
+CLIENT_ORIGIN=*
+NODE_ENV=development
+```
 
-1. Añade tareas con distintas categorías:
-   - “Preparar informe semanal” → Categoría: **Trabajo**, Prioridad: Alta.
-   - “Ir al gimnasio” → Categoría: **Personal**, Prioridad: Media.
-2. Usa el filtro de **estado** para ver solo tareas pendientes.
-3. Usa el filtro de **categoría** para centrarte en “Trabajo” durante tu jornada laboral.
+`server/src/config/env.js` valida que `PORT` exista al arrancar.
 
-### Ejemplo 3: Limpieza rápida de tareas
+## Frontend conectado a API
 
-1. Cuando termines un bloque de trabajo, pulsa el botón 🧹 “Limpiar” para borrar todas las tareas.
-2. Empieza una nueva sesión de tareas sin restos antiguos.
+- `src/api/client.js`: capa de comunicación HTTP con `fetch`.
+- `taskflow.js`: lógica UI + estados de red.
 
-## Documentación de funciones clave
+El frontend gestiona estados:
+- `loading`: mostrando mensaje de operación en curso.
+- `success`: confirmación visual cuando la operación termina bien.
+- `error`: feedback visual cuando backend responde con error o no hay conexión.
 
-La lógica principal está en `taskflow.js`. A continuación se resumen algunas funciones importantes (además de la documentación JSDoc presente en el propio archivo):
+La persistencia de tareas ya no usa `localStorage`; ahora depende de la API.
 
-- **`handleTaskFormSubmit(event)`**  
-  Maneja el envío del formulario de nueva tarea.  
-  - Valida los datos mediante `validateTaskForm`.  
-  - Normaliza categoría y prioridad (`normalizeCategory`, `normalizePriority`).  
-  - Crea una nueva tarea (`createTask`) y la añade al principio de la lista.  
-  - Guarda en `localStorage` y vuelve a renderizar (`persistTasksAndRender`).
+`localStorage` se mantiene solo para preferencias de UI:
+- tema
+- filtros
+- orden
+- modo compacto
 
-- **`validateTaskForm(title, category, priority)`**  
-  Verifica que:
-  - El título no esté vacío y cumpla los límites de longitud.
-  - La categoría y prioridad estén dentro de las listas permitidas.
-  Devuelve `null` si todo está bien o un mensaje de error en español si hay problemas.
+## API REST: ejemplos rápidos
 
-- **`renderTaskList()`**  
-  Orquesta el refresco de la lista:
-  - Lee el texto de búsqueda, el filtro de estado, el filtro de categoría y el criterio de orden.
-  - Llama a `getFilteredTasks` y después a `sortTasks`.
-  - Genera el HTML de cada tarea con `taskItemTemplate` y lo inyecta en el DOM.
-  - Muestra u oculta el estado vacío según corresponda.
+Base URL local:
+- `http://localhost:3000/api/v1/tasks`
 
-- **`getFilteredTasks(taskList, query, statusFilter, categoryFilter)`**  
-  Recibe la lista completa de tareas y devuelve una lista filtrada:
-  - Por texto (en título, categoría o prioridad).
-  - Por estado (todas, pendientes, completadas).
-  - Por categoría específica (o todas).
+### GET /api/v1/tasks
+Respuesta `200`:
 
-- **`sortTasks(taskList, sortOrder)`**  
-  Ordena las tareas según:
-  - Fecha de creación (ascendente/descendente).
-  - Prioridad (Alta > Media > Baja).
-  - Título (A–Z o Z–A).
+```json
+[
+  {
+    "id": "uuid",
+    "title": "Preparar entrega",
+    "category": "Trabajo",
+    "priority": "Alta",
+    "done": false,
+    "dueDate": null,
+    "createdAt": 1710000000000,
+    "updatedAt": 1710000000000
+  }
+]
+```
 
-- **`handleTaskListClick(event)`**  
-  Listener de eventos delegados para la lista de tareas:
-  - **`toggle`**: marca una tarea como hecha/pendiente.
-  - **`delete`**: elimina la tarea.
-  - **`edit`**: abre un `prompt` para editar el título y reutiliza `validateTaskForm` para validar el nuevo valor.
+### POST /api/v1/tasks
+Body:
 
-- **`initializeTheme()`, `handleThemeToggle()`, `syncThemeIcon()`**  
-  Controlan el tema claro/oscuro:
-  - Leen y guardan la preferencia en `localStorage`.
-  - Aplican la clase `dark` al `documentElement`.
-  - Ajustan el icono del botón de tema.
+```json
+{
+  "title": "Repasar Express",
+  "category": "Estudio",
+  "priority": "Media",
+  "dueDate": null
+}
+```
 
-## Notas sobre el uso de IA
+Respuesta `201`: tarea creada.
 
-Parte de este proyecto se ha refactorizado y documentado con ayuda de una IA:
+### PATCH /api/v1/tasks/:id
+Body:
 
-- Se han propuesto nombres de funciones y variables más expresivos.
-- Se ha separado la lógica en funciones pequeñas y reutilizables.
-- Se ha añadido documentación JSDoc en las funciones clave.
-- Se han generado ideas de nuevas funcionalidades (filtros, ordenación, edición) y después se han revisado y corregido manualmente.
+```json
+{
+  "done": true
+}
+```
 
-Si amplías el proyecto, se recomienda mantener este estilo:
+Respuesta `200`: tarea actualizada.
 
-- Funciones pequeñas, con un propósito claro.
-- Nombres descriptivos (en español o en inglés, pero consistentes).
-- Comentarios JSDoc cuando el comportamiento no es completamente evidente.
-- Commits pequeños y bien descritos al añadir nuevas funcionalidades.
+### DELETE /api/v1/tasks/:id
+Respuesta `204` sin body.
 
+## Puesta en marcha local
+
+### 1) Backend
+
+```bash
+cd server
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Servidor en:
+- `http://localhost:3000`
+
+### 2) Frontend
+
+Abre `index.html` en navegador.
+
+Opcional (si quieres cambiar base URL de API):
+
+```html
+<script>
+  window.TASKFLOW_API_URL = 'http://localhost:3000/api/v1/tasks';
+</script>
+```
+
+## Pruebas de integración
+
+Revisa `docs/integration-tests.md` para casos completos en Postman/Thunder Client:
+- caso válido (`200/201/204`)
+- error de validación (`400`)
+- recurso inexistente (`404`)
+- error interno (`500`)
+
+## Despliegue backend en Vercel
+
+Este proyecto incluye:
+- `api/index.js` (adaptador serverless)
+- `vercel.json` (rewrite global a la función)
+
+Pasos:
+
+1. Subir repositorio a GitHub.
+2. Importar proyecto en Vercel.
+3. Configurar variables de entorno en Vercel:
+   - `PORT=3000`
+   - `CLIENT_ORIGIN=*` (o tu dominio de frontend)
+   - `NODE_ENV=production`
+4. Desplegar.
+
+Cuando tengas la URL de Vercel, apunta el frontend a esa URL usando `window.TASKFLOW_API_URL`.
+
+## Bonus opcional
+
+- Documentar OpenAPI/Swagger.
+- Exportar colección de Postman con tests automáticos.
+- Integrar Sentry para monitoreo de errores.
